@@ -62,12 +62,12 @@
     <Compile Include="CodeGenerators\CSharp\SwaggerToCSharpGeneratorBase.cs" />
     <Compile Include="CodeGenerators\CSharp\SwaggerToCSharpGeneratorSettings.cs" />
     <Compile Include="CodeGenerators\CSharp\SwaggerToCSharpTypeResolver.cs" />
+    <Compile Include="CodeGenerators\CSharp\Templates\ClientTemplate.Extensions.cs" />
     <Compile Include="CodeGenerators\CSharp\Templates\ClientTemplate.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ClientTemplate.tt</DependentUpon>
     </Compile>
-    <Compile Include="CodeGenerators\CSharp\Templates\ClientTemplate.Extensions.cs" />
     <Compile Include="CodeGenerators\CSharp\Templates\FileTemplate.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -10,23 +10,23 @@
 public partial interface I<#=Model.Class#>
 {
 <#
-		foreach (var operation in Model.Operations)
-		{
-			GenerateMethodDocumentation(operation, false);
-			GenerateMethodSignature(operation, false);
-			Write(";");
+        foreach (var operation in Model.Operations)
+        {
+            GenerateMethodDocumentation(operation, false);
+            GenerateMethodSignature(operation, false);
+            Write(";");
 
-			GenerateMethodDocumentation(operation, true);
-			GenerateMethodSignature(operation, true);
-			Write(";");
-		}
+            GenerateMethodDocumentation(operation, true);
+            GenerateMethodSignature(operation, true);
+            Write(";");
+        }
 #>
 }
 <#
-	}
+    }
 
-	if (Model.GenerateImplementation)
-	{
+    if (Model.GenerateImplementation)
+    {
 #>
 
 public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Model.HasBaseClass){#><#=Model.BaseClass#><#if (Model.GenerateClientInterfaces){#>, <#}#><#}#><#if (Model.GenerateClientInterfaces){#>I<#=Model.Class#><#}#>
@@ -51,11 +51,11 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
     }
 
 <#
-	foreach (var operation in Model.Operations)
-	{
-		GenerateMethodDocumentation(operation, false);
-		Write("    public ");
-	    GenerateMethodSignature(operation, false);
+    foreach (var operation in Model.Operations)
+    {
+        GenerateMethodDocumentation(operation, false);
+        Write("    public ");
+        GenerateMethodSignature(operation, false);
 #>
 
     {
@@ -63,236 +63,232 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
     }
 
 <#
-		GenerateMethodDocumentation(operation, true);
-		Write("    public async ");
-		GenerateMethodSignature(operation, true);
+        GenerateMethodDocumentation(operation, true);
+        Write("    public async ");
+        GenerateMethodSignature(operation, true);
 #>
     
     {
-        var url = "<#=operation.Path#>?");
+        var url = "<#=operation.Path#>?";
 <#
-		foreach (var parameter in operation.PathParameters)
-		{
+        foreach (var parameter in operation.PathParameters)
+        {
 #>
         if (<#=parameter.VariableNameLower#> == null)
-		{
+        {
             throw new ArgumentNullException("<#=parameter.VariableNameLower#>");
-		}
+        }
 
 <#  
-			if (parameter.IsDateArray)
-			{
+            if (parameter.IsDateArray)
+            {
 #>
         url = url.Replace("{<#=parameter.Name#>}", Uri.EscapeUriString(string.Join(",", <#=parameter.VariableNameLower#>.Select(s => s.ToString("s", CultureInfo.InvariantCulture)))));
 <#  
-			}
-			else if (parameter.IsDate)
-			{
+            }
+            else if (parameter.IsDate)
+            {
 #>							
         url = url.Replace("{<#=parameter.Name#>}", Uri.EscapeUriString(<#=parameter.VariableNameLower#>.ToString("s", CultureInfo.InvariantCulture)));
 <#  
-			}
-			else if (parameter.IsArray)
-			{
+            }
+            else if (parameter.IsArray)
+            {
 #>
         url = url.Replace("{<#=parameter.Name#>}", Uri.EscapeUriString(string.Join(",", <#=parameter.VariableNameLower#>.Select(s => s.ToString()))));
 <#
-			}
-			else
-			{
+            }
+            else
+            {
 #>
         url = url.Replace("{<#=parameter.Name#>}", Uri.EscapeUriString(<#=parameter.VariableNameLower#>.ToString()));
 <#  
-			}
-		}
+            }
+        }
 
-		foreach (var parameter in operation.QueryParameters)
-		{
-			if (!parameter.IsNullable)
-			{
+        foreach (var parameter in operation.QueryParameters)
+        {
+            if (!parameter.IsNullable)
+            {
 #>						
         if (<#=parameter.VariableNameLower#> == null)
-		{
+        {
             throw new ArgumentNullException("<#=parameter.VariableNameLower#>");
-		}
+        }
 <#  
-			}
+            }
 
   
-			if (parameter.IsDateArray)
-			{
+            if (parameter.IsDateArray)
+            {
 #>
         if (<#=parameter.VariableNameLower#> != null)
-		{
+        {
             foreach (var item in <#=parameter.VariableNameLower#>) 
-			{ 
-				url += string.Format("<#=parameter.Name#>={0}&", Uri.EscapeUriString(item.ToString("s", CultureInfo.InvariantCulture))); 
-			}
+            { 
+                url += string.Format("<#=parameter.Name#>={0}&", Uri.EscapeUriString(item.ToString("s", CultureInfo.InvariantCulture))); 
+            }
 <#  
-			}
-			else if (parameter.IsDate)
-			{
+            }
+            else if (parameter.IsDate)
+            {
 #>
-			url += string.Format("<#=parameter.Name#>={0}&", Uri.EscapeUriString(<#=parameter.VariableNameLower#> != null ? <#=parameter.VariableNameLower#><#if (parameter.Type.EndsWith("?")){#>.Value<#}#>.ToString("s", CultureInfo.InvariantCulture) : "null"));
+            url += string.Format("<#=parameter.Name#>={0}&", Uri.EscapeUriString(<#=parameter.VariableNameLower#> != null ? <#=parameter.VariableNameLower#><#if (parameter.Type.EndsWith("?")){#>.Value<#}#>.ToString("s", CultureInfo.InvariantCulture) : "null"));
 <#  
-			}
-			else if (parameter.IsArray)
-			{
+            }
+            else if (parameter.IsArray)
+            {
 #>							
-			if (<#=parameter.VariableNameLower#> != null)
-			{
-				foreach (var item in <#=parameter.VariableNameLower#>) 
-				{ 
-					url += string.Format("<#=parameter.Name#>={0}&", Uri.EscapeUriString(item.ToString())); 
-				}
+            if (<#=parameter.VariableNameLower#> != null)
+            {
+                foreach (var item in <#=parameter.VariableNameLower#>) 
+                { 
+                    url += string.Format("<#=parameter.Name#>={0}&", Uri.EscapeUriString(item.ToString())); 
+                }
 <#  
-			}
-			else
-			{
+            }
+            else
+            {
 #>
-			url += string.Format("<#=parameter.Name#>={0}&", Uri.EscapeUriString(<#=parameter.VariableNameLower#> != null ? <#=parameter.VariableNameLower#><#if (parameter.Type.EndsWith("?")){#>.Value<#}#>.ToString() : "null"));
+            url += string.Format("<#=parameter.Name#>={0}&", Uri.EscapeUriString(<#=parameter.VariableNameLower#> != null ? <#=parameter.VariableNameLower#><#if (parameter.Type.EndsWith("?")){#>.Value<#}#>.ToString() : "null"));
 <#  
-			}
-		}
+            }
+        }
 
 #>
         var client = this.CreateClient();
 <#
 
-		foreach (var parameter in operation.HeaderParameters)
-		{
+        foreach (var parameter in operation.HeaderParameters)
+        {
 #>
         client.DefaultRequestHeaders.TryAddWithoutValidation("<#=parameter.Name#>", <#=parameter.VariableNameLower#>);
 <#
-		}
+        }
 
-		if (operation.HasContent)
-		{
+        if (operation.HasContent)
+        {
 #>
         var response = await client.<#=operation.HttpMethodUpper#>AsJsonAsync(url, <#=operation.ContentParameter.VariableNameLower#>, cancellationToken);
 <#
-		}
-		else
-		{
-			if (operation.IsGetOrDelete)
-			{
+        }
+        else
+        {
+            if (operation.IsGetOrDelete)
+            {
 #>
         var response = await client.<#=operation.HttpMethodUpper#>AsJsonAsync(url, cancellationToken);
 <#  
-			}
-			else
-			{
-				if (operation.HasFormParameters)
-				{
+            }
+            else
+            {
+                if (operation.HasFormParameters)
+                {
 #>
         var content = new MultipartFormDataContent();
 <#
-					foreach (var parameter in operation.FormParameters)
-					{
-						if (parameter.IsNullable)
-						{
+                    foreach (var parameter in operation.FormParameters)
+                    {
+                        if (parameter.IsNullable)
+                        {
 #>
         if (<#=parameter.VariableNameLower#> != null)
 <#  
-						}
-						else
-						{
+                        }
+                        else
+                        {
 #>												
         if (<#=parameter.VariableNameLower#> == null)
-		{
+        {
             throw new ArgumentNullException("<#=parameter.VariableNameLower#>");
-		}
+        }
         else
-		{
+        {
 <#  
-						}
+                        }
 
-						if (parameter.IsFile)
-						{
+                        if (parameter.IsFile)
+                        {
 #>
             content.Add(new StreamContent(<#=parameter.VariableNameLower#>), "<#=parameter.Name#>");
 <#
-						}
-						else
-						{
+                        }
+                        else
+                        {
 #>
             content.Add(new StringContent(<#=parameter.VariableNameLower#>.ToString()), "<#=parameter.Name#>");
 <#  
-						}
-					}
-				}
-				else
-				{
+                        }
+                    }
+                }
+                else
+                {
 #>
         var content = new StringContent(string.Empty);
 <#  
-				}
+                }
 #> 
         var response = await client.<#=operation.HttpMethodUpper#>AsJsonAsync(url, content, cancellationToken).ConfigureAwait(false);
 <#  
-			}
-		}
+            }
+        }
 #>
         var status = (int)response.StatusCode;
 
 <#
-		foreach (var response in operation.Responses)
-		{
+        foreach (var response in operation.Responses)
+        {
 #>
-        if (status == <#=response.StatusCode#>) 
+ if (status == <#=response.StatusCode#>)
         {
 <#
-			if (response.HasType)
-			{
-				if (response.IsFile)
-				{
-					if (response.IsSuccess)
-					{
+            if (response.HasType)
+            {
+                if (response.IsFile)
+                {
+                    if (response.IsSuccess)
+                    {
 #>
             return responseData; 
 <#      
-					}
-					else
-					{
+                    }
+                    else
+                    {
 #>
-            throw new SwaggerException<byte[]>("A server side error occurred.", status, responseData, responseData, null);
+            throw new SwaggerException<byte[]>("A server side error occurred.", status.ToString(), responseData, responseData, null);
 <#      
-					} 
-				}
-				else
-				{
+                    } 
+                }
+                else
+                {
 #>							
+            <#=response.Type#> result;
             try
             {
-                if (responseData.Length > 0)
-                {
-                    var result = response.Content.ReadAsAsync<<#=response.Type#>>();
-                    return result;
-                }
+                result = await response.Content.ReadAsAsync<<#=response.Type#>>();
 <#      
-					if (response.IsSuccess) 
-					{
+                    if (response.IsSuccess) 
+                    {
 #>
-                var result = response.Content.ReadAsAsync<>
                 return result; 
             } 
             catch (Exception exception) 
             {
-                throw new SwaggerException("Could not deserialize the response body.", status, responseData, exception);
+                throw new SwaggerException("Could not deserialize the response body.", status.ToString(), null, exception);
             }
 <#      
-					}
-					else
-					{
+                    }
+                    else
+                    {
 #>
             } 
             catch (Exception exception) 
             {
-                throw new SwaggerException("Could not deserialize the response body.", status, responseData, exception);
+                throw new SwaggerException("Could not deserialize the response body.", status.ToString(), null, exception);
             }
 <#          
-						if (response.TypeInheritsFromException)
-						{
+                        if (response.TypeInheritsFromException)
+                        {
 #>
             if (result == null)
             {
@@ -303,41 +299,42 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
             result.Data.Add("ResponseData", Encoding.UTF8.GetString(responseData));
             throw result;
 <#          
-						}
-						else
-						{
+                        }
+                        else
+                        {
 #>
-            throw new SwaggerException<<#=response.Type#>>("A server side error occurred.", status, responseData, result, null);
+
+            throw new SwaggerException<<#=response.Type#>>("A server side error occurred.", status.ToString(), null, result, null);
 <#          
-						}
-					}
-				}
-			}
-			else
-			{
-				if (operation.HasResultType)
-				{
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (operation.HasResultType)
+                {
 #>
             return default(<#=operation.ResultType.Substring(5, operation.ResultType.Length - 6)#>);
 <#
-				}
-				else
-				{
+                }
+                else
+                {
 #>
             return;     
 <#
-				}
-			}#>
+                }
+            }#>
         }
-        else
-<#
-		}
+        else<#
+        }
 #>
+
         {
 <#
 
-		if (operation.HasDefaultResponse)
-		{
+        if (operation.HasDefaultResponse)
+        {
 #>
             var result = default(<#=operation.DefaultResponse.Type#>); 
             try
@@ -348,29 +345,30 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
                 }
 
 <#  
-		if (operation.HasOnlyDefaultResponse)
-		{
+        if (operation.HasOnlyDefaultResponse)
+        {
 #>
                 if (status.Length == 3 && status.StartsWith("2"))
                 {
                     return result;
                 }
 <#  
-		}
+        }
 #>
             } 
             catch (Exception exception) 
             {
-                throw new SwaggerException("Could not deserialize the response body.", status, responseData, exception);
+                throw new SwaggerException("Could not deserialize the response body.", status.ToString(), responseData, exception);
             }
 
-            throw new SwaggerException<<#=operation.DefaultResponse.Type#>>("A server side error occurred.", status, responseData, result, null);
+            throw new SwaggerException<<#=operation.DefaultResponse.Type#>>("A server side error occurred.", status.ToString(), responseData, result, null);
 <#
-	}
+    }
 #>
         }
 
-        throw new SwaggerException("The HTTP status code of the response was not expected (" + (int)response.StatusCode + ").", status, responseData, null);
+        var responseData = await response.Content.ReadAsByteArrayAsync();
+        throw new SwaggerException("The HTTP status code of the response was not expected (" + (int)response.StatusCode + ").", status.ToString(), responseData, null);
     }
 
 <#
@@ -385,7 +383,7 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
 <#+
     public string GenerateParameters(OperationModel op, bool shouldIncludeCancellationToken)
     {
-		var sb = new System.Text.StringBuilder();
+        var sb = new System.Text.StringBuilder();
         foreach (var p in op.Parameters)
         {
             sb.Append($"{p.Type} {p.VariableNameLower}");
@@ -395,52 +393,52 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
             }
 
         }
-		
-		if (shouldIncludeCancellationToken)
-		{
-			sb.Append("CancellationToken cancellationToken");
-		}
+        
+        if (shouldIncludeCancellationToken)
+        {
+            sb.Append("CancellationToken cancellationToken");
+        }
 
-		return sb.ToString();
+        return sb.ToString();
     }
 
-	public void GenerateMethodDocumentation(OperationModel operation, bool shouldIncludeCancellationToken)
-	{
-		if (operation.HasSummary)
+    public void GenerateMethodDocumentation(OperationModel operation, bool shouldIncludeCancellationToken)
+    {
+        if (operation.HasSummary)
         {
-			WriteLine("    /// <summary>");
-			WriteLine($"    /// {ConversionUtilities.ConvertCSharpDocBreaks(operation.Summary, 1)}");
-			WriteLine("    /// </summary>");
+            WriteLine("    /// <summary>");
+            WriteLine($"    /// {ConversionUtilities.ConvertCSharpDocBreaks(operation.Summary, 1)}");
+            WriteLine("    /// </summary>");
         }
 
         foreach (var parameter in operation.Parameters) 
         {
             if (parameter.HasDescription)
             {
-				WriteLine($"    /// <param name=\"{parameter.VariableNameLower}\">{ConversionUtilities.ConvertCSharpDocBreaks(parameter.Description, 1)}</param>");
+                WriteLine($"    /// <param name=\"{parameter.VariableNameLower}\">{ConversionUtilities.ConvertCSharpDocBreaks(parameter.Description, 1)}</param>");
             }
         }
 
-		if (shouldIncludeCancellationToken)
-		{
-			WriteLine("    /// <param name=\"cancellationToken\">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>");
-		}
+        if (shouldIncludeCancellationToken)
+        {
+            WriteLine("    /// <param name=\"cancellationToken\">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>");
+        }
 
         if (operation.HasResultDescription)
         {
-			WriteLine("    /// <returns>{ConversionUtilities.ConvertCSharpDocBreaks(operation.ResultDescription, 1)}</returns>");
+            WriteLine($"    /// <returns>{ConversionUtilities.ConvertCSharpDocBreaks(operation.ResultDescription, 1)}</returns>");
         }
 
-		WriteLine("    /// <exception cref=\"SwaggerException\">A server side error occurred.</exception>");
-	}
+        WriteLine("    /// <exception cref=\"SwaggerException\">A server side error occurred.</exception>");
+    }
 
-	public void GenerateMethodSignature(OperationModel operation, bool shouldIncludeCancellationToken)
-	{
-		if (operation.IsDeprecated)
+    public void GenerateMethodSignature(OperationModel operation, bool shouldIncludeCancellationToken)
+    {
+        if (operation.IsDeprecated)
         {
-			WriteLine("[Obsolete]");
+            WriteLine("[Obsolete]");
         }
-		
-		Write($"{operation.ResultType} {operation.OperationNameUpper}Async({GenerateParameters(operation, shouldIncludeCancellationToken)})");
-	}
+        
+        Write($"{operation.ResultType} {operation.OperationNameUpper}Async({GenerateParameters(operation, shouldIncludeCancellationToken)})");
+    }
  #>
