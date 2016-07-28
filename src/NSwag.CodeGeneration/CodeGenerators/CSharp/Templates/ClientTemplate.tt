@@ -156,20 +156,21 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
         }
 
 #>
-        var client = this.CreateClient();
+        using (var client = this.CreateClient())
+        {
 <#
 
         foreach (var parameter in operation.HeaderParameters)
         {
 #>
-        client.DefaultRequestHeaders.TryAddWithoutValidation("<#=parameter.Name#>", <#=parameter.VariableNameLower#>);
+            client.DefaultRequestHeaders.TryAddWithoutValidation("<#=parameter.Name#>", <#=parameter.VariableNameLower#>);
 <#
         }
 
         if (operation.HasContent)
         {
 #>
-        var response = await client.<#=operation.HttpMethodUpper#>AsJsonAsync(url, <#=operation.ContentParameter.VariableNameLower#>, cancellationToken);
+            var response = await client.<#=operation.HttpMethodUpper == "Get" ? "GetAsync" : operation.HttpMethodUpper + "AsJsonAsync"#>(url, <#=operation.ContentParameter.VariableNameLower#>, cancellationToken);
 <#
         }
         else
@@ -177,7 +178,7 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
             if (operation.IsGetOrDelete)
             {
 #>
-        var response = await client.<#=operation.HttpMethodUpper#>AsJsonAsync(url, cancellationToken);
+            var response = await client.<#=operation.HttpMethodUpper == "Get" ? "GetAsync" : operation.HttpMethodUpper + "AsJsonAsync"#>(url, cancellationToken);
 <#  
             }
             else
@@ -185,38 +186,38 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
                 if (operation.HasFormParameters)
                 {
 #>
-        var content = new MultipartFormDataContent();
+            var content = new MultipartFormDataContent();
 <#
                     foreach (var parameter in operation.FormParameters)
                     {
                         if (parameter.IsNullable)
                         {
 #>
-        if (<#=parameter.VariableNameLower#> != null)
+            if (<#=parameter.VariableNameLower#> != null)
 <#  
                         }
                         else
                         {
 #>												
-        if (<#=parameter.VariableNameLower#> == null)
-        {
-            throw new ArgumentNullException("<#=parameter.VariableNameLower#>");
-        }
-        else
-        {
+            if (<#=parameter.VariableNameLower#> == null)
+            {
+                throw new ArgumentNullException("<#=parameter.VariableNameLower#>");
+            }
+            else
+            {
 <#  
                         }
 
                         if (parameter.IsFile)
                         {
 #>
-            content.Add(new StreamContent(<#=parameter.VariableNameLower#>), "<#=parameter.Name#>");
+                content.Add(new StreamContent(<#=parameter.VariableNameLower#>), "<#=parameter.Name#>");
 <#
                         }
                         else
                         {
 #>
-            content.Add(new StringContent(<#=parameter.VariableNameLower#>.ToString()), "<#=parameter.Name#>");
+                content.Add(new StringContent(<#=parameter.VariableNameLower#>.ToString()), "<#=parameter.Name#>");
 <#  
                         }
                     }
@@ -224,23 +225,23 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
                 else
                 {
 #>
-        var content = new StringContent(string.Empty);
+            var content = new StringContent(string.Empty);
 <#  
                 }
 #> 
-        var response = await client.<#=operation.HttpMethodUpper#>AsJsonAsync(url, content, cancellationToken).ConfigureAwait(false);
+            var response = await client.<#=operation.HttpMethodUpper#>AsJsonAsync(url, content, cancellationToken).ConfigureAwait(false);
 <#  
             }
         }
 #>
-        var status = (int)response.StatusCode;
-
+            var status = (int)response.StatusCode;
+            
 <#
         foreach (var response in operation.Responses)
         {
 #>
  if (status == <#=response.StatusCode#>)
-        {
+            {
 <#
             if (response.HasType)
             {
@@ -249,62 +250,62 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
                     if (response.IsSuccess)
                     {
 #>
-            return responseData; 
+                return responseData; 
 <#      
                     }
                     else
                     {
 #>
-            throw new SwaggerException<byte[]>("A server side error occurred.", status.ToString(), responseData, responseData, null);
+                throw new SwaggerException<byte[]>("A server side error occurred.", status.ToString(), responseData, responseData, null);
 <#      
                     } 
                 }
                 else
                 {
 #>							
-            <#=response.Type#> result;
-            try
-            {
-                result = await response.Content.ReadAsAsync<<#=response.Type#>>();
+                <#=response.Type#> result;
+                try
+                {
+                    result = await response.Content.ReadAsAsync<<#=response.Type#>>();
 <#      
                     if (response.IsSuccess) 
                     {
 #>
-                return result; 
-            } 
-            catch (Exception exception) 
-            {
-                throw new SwaggerException("Could not deserialize the response body.", status.ToString(), null, exception);
-            }
+                    return result; 
+                } 
+                catch (Exception exception) 
+                {
+                    throw new SwaggerException("Could not deserialize the response body.", status.ToString(), null, exception);
+                }
 <#      
                     }
                     else
                     {
 #>
-            } 
-            catch (Exception exception) 
-            {
-                throw new SwaggerException("Could not deserialize the response body.", status.ToString(), null, exception);
-            }
+                } 
+                catch (Exception exception) 
+                {
+                    throw new SwaggerException("Could not deserialize the response body.", status.ToString(), null, exception);
+                }
 <#          
                         if (response.TypeInheritsFromException)
                         {
 #>
-            if (result == null)
-            {
-                result = new <#=response.Type#>();
-            }
+                if (result == null)
+                {
+                    result = new <#=response.Type#>();
+                }
 
-            result.Data.Add("HttpStatus", status);
-            result.Data.Add("ResponseData", Encoding.UTF8.GetString(responseData));
-            throw result;
+                result.Data.Add("HttpStatus", status);
+                result.Data.Add("ResponseData", Encoding.UTF8.GetString(responseData));
+                throw result;
 <#          
                         }
                         else
                         {
 #>
 
-            throw new SwaggerException<<#=response.Type#>>("A server side error occurred.", status.ToString(), null, result, null);
+                throw new SwaggerException<<#=response.Type#>>("A server side error occurred.", status.ToString(), null, result, null);
 <#          
                         }
                     }
@@ -315,60 +316,61 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
                 if (operation.HasResultType)
                 {
 #>
-            return default(<#=operation.ResultType.Substring(5, operation.ResultType.Length - 6)#>);
+                return default(<#=operation.ResultType.Substring(5, operation.ResultType.Length - 6)#>);
 <#
                 }
                 else
                 {
 #>
-            return;     
+                return;     
 <#
                 }
             }#>
-        }
-        else<#
+            }
+            else<#
         }
 #>
 
-        {
+            {
 <#
 
         if (operation.HasDefaultResponse)
         {
 #>
-            var result = default(<#=operation.DefaultResponse.Type#>); 
-            try
-            {
-                if (responseData.Length > 0)
+                var result = default(<#=operation.DefaultResponse.Type#>); 
+                try
                 {
-                    result = JsonConvert.DeserializeObject<<#=operation.DefaultResponse.Type#>>(Encoding.UTF8.GetString(responseData));
-                }
+                    if (responseData.Length > 0)
+                    {
+                        result = JsonConvert.DeserializeObject<<#=operation.DefaultResponse.Type#>>(Encoding.UTF8.GetString(responseData));
+                    }
 
 <#  
         if (operation.HasOnlyDefaultResponse)
         {
 #>
-                if (status.Length == 3 && status.StartsWith("2"))
-                {
-                    return result;
-                }
+                    if (status.Length == 3 && status.StartsWith("2"))
+                    {
+                        return result;
+                    }
 <#  
         }
 #>
-            } 
-            catch (Exception exception) 
-            {
-                throw new SwaggerException("Could not deserialize the response body.", status.ToString(), responseData, exception);
-            }
+                } 
+                catch (Exception exception) 
+                {
+                    throw new SwaggerException("Could not deserialize the response body.", status.ToString(), responseData, exception);
+                }
 
-            throw new SwaggerException<<#=operation.DefaultResponse.Type#>>("A server side error occurred.", status.ToString(), responseData, result, null);
+                throw new SwaggerException<<#=operation.DefaultResponse.Type#>>("A server side error occurred.", status.ToString(), responseData, result, null);
 <#
     }
 #>
-        }
+            }
 
-        var responseData = await response.Content.ReadAsByteArrayAsync();
-        throw new SwaggerException("The HTTP status code of the response was not expected (" + (int)response.StatusCode + ").", status.ToString(), responseData, null);
+            var responseData = await response.Content.ReadAsByteArrayAsync();
+            throw new SwaggerException("The HTTP status code of the response was not expected (" + (int)response.StatusCode + ").", status.ToString(), responseData, null);
+        }
     }
 
 <#
