@@ -41,15 +41,6 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
 
     public string BaseUrl { get; set; }
 
-    private HttpClient CreateClient()
-    {
-        var client = new HttpClient();
-        client.BaseAddress = new Uri(this.BaseUrl);
-        client.DefaultRequestHeaders.Accept.Clear();
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        return client;
-    }
-
 <#
     foreach (var operation in Model.Operations)
     {
@@ -376,6 +367,14 @@ public partial class <#=Model.Class#> <#if (Model.HasBaseType){#>: <#}#><#if (Mo
 <#
 }
 #>
+    private HttpClient CreateClient()
+    {
+        var client = new HttpClient();
+        client.BaseAddress = new Uri(this.BaseUrl);
+        client.DefaultRequestHeaders.Accept.Clear();
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        return client;
+    }
 }
 <#
 }
